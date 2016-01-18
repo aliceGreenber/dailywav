@@ -65,7 +65,8 @@ def scrape_page(base_url):
                         categories = 'Shows'
                         try:
                         #     opener = urllib.FancyURLopener(proxies)
-                            filename = urlretrieve(file_url)
+                            filename, headers = urlretrieve(file_url)
+                            sizeInBytes = headers['Content-Length']
                             audio = MP3(filename[0])
                             if audio.info.length < 1:
                                 length = int(math.ceil(audio.info.length))
@@ -76,6 +77,7 @@ def scrape_page(base_url):
                             try:
                                 #  opener = urllib.FancyURLopener(proxies)
                                  filename, headers = urlretrieve(file_url)
+                                 sizeInBytes = headers['Content-Length']
                                  wfile = wave.open (filename, "r")
                                  time = (1.0 * wfile.getnframes()) / wfile.getframerate()
                                  if time < 1:
@@ -85,10 +87,11 @@ def scrape_page(base_url):
                                  duration = length
                             except:
                                  duration = ''
+                                 sizeInBytes = ''
                         
                         print movie_name.encode('utf-8'), transcript.encode('utf-8'), Tags
-                        scraperwiki.sqlite.save(unique_keys=['fileUrl'], data={"sourceUrl": unicode(movie_link), "movie name": unicode(movie_name), "transcript": unicode(transcript), "fileType": file_type, "fileUrl":file_url, "duration":duration, "categories":categories, "imageUrl":image_url, "tags": unicode(Tags)})
-                        yield movie_link, movie_name, transcript,  file_type, file_url, duration, categories, image_url
+                        scraperwiki.sqlite.save(unique_keys=['fileUrl'], data={"sourceUrl": unicode(movie_link), "movie name": unicode(movie_name), "transcript": unicode(transcript), "fileType": file_type, "fileUrl":file_url, "duration":duration, "categories":categories, "imageUrl":image_url,"sizeInBytes" : sizeInBytes, "tags": unicode(Tags)})
+                        yield movie_link, movie_name, transcript,  file_type, file_url, duration, categories, image_url, sizeInBytes
 
                 else:
                     image_url = ''
@@ -118,7 +121,8 @@ def scrape_page(base_url):
                         Tags = ', '.join(tagslist)
                         try:
                         #     opener = urllib.FancyURLopener(proxies)
-                            filename = urlretrieve(file_url)
+                            filename,headers = urlretrieve(file_url)
+                            sizeInBytes = headers['Content-Length']
                             audio = MP3(filename[0])
                             if audio.info.length < 1:
                                 length = int(math.ceil(audio.info.length))
@@ -129,6 +133,7 @@ def scrape_page(base_url):
                             try:
                                 #  opener = urllib.FancyURLopener(proxies)
                                  filename, headers = urlretrieve(file_url)
+                                 sizeInBytes = headers['Content-Length']
                                  wfile = wave.open (filename, "r")
                                  time = (1.0 * wfile.getnframes()) / wfile.getframerate()
                                  if time < 1:
@@ -138,9 +143,10 @@ def scrape_page(base_url):
                                  duration = length
                             except:
                                  duration = ''
+                                 sizeInBytes = ''
                         print movie_name.encode('utf-8'), transcript.encode('utf-8'), Tags
-                        scraperwiki.sqlite.save(unique_keys=['fileUrl'], data={"sourceUrl": unicode(movie_link), "movie name": unicode(movie_name), "transcript": unicode(transcript), "fileType": file_type, "fileUrl":file_url, "duration":duration, "categories":categories, "imageUrl":image_url, "tags": unicode(Tags)})
-                        yield movie_link, movie_name, transcript,  file_type, file_url, duration, categories, image_url
+                        scraperwiki.sqlite.save(unique_keys=['fileUrl'], data={"sourceUrl": unicode(movie_link), "movie name": unicode(movie_name), "transcript": unicode(transcript), "fileType": file_type, "fileUrl":file_url, "duration":duration, "categories":categories, "imageUrl":image_url, "sizeInBytes":sizeInBytes, "tags": unicode(Tags)})
+                        yield movie_link, movie_name, transcript,  file_type, file_url, duration, categories, image_url, sizeInBytes
 
                     for paged in itertools.count():
                         movie_page = requests.get(movie_link+'?page={}'.format(paged+1), headers= ua)
@@ -180,7 +186,8 @@ def scrape_page(base_url):
                             categories = 'Shows'
                             try:
                                 # opener = urllib.FancyURLopener(proxies)
-                                filename = urlretrieve(file_url)
+                                filename, headers = urlretrieve(file_url)
+                                sizeInBytes = headers['Content-Length']
                                 audio = MP3(filename[0])
                                 if audio.info.length < 1:
                                     length = int(math.ceil(audio.info.length))
@@ -191,6 +198,7 @@ def scrape_page(base_url):
                                 try:
                                 #      opener = urllib.FancyURLopener(proxies)
                                      filename, headers = urlretrieve(file_url)
+                                     sizeInBytes = headers['Content-Length']
                                      wfile = wave.open (filename, "r")
                                      time = (1.0 * wfile.getnframes()) / wfile.getframerate()
                                      if time < 1:
@@ -200,9 +208,10 @@ def scrape_page(base_url):
                                      duration = length
                                 except:
                                      duration = ''
+                                     sizeInBytes = ''
                             print movie_name.encode('utf-8'), transcript.encode('utf-8'), Tags
-                            scraperwiki.sqlite.save(unique_keys=['fileUrl'], data={"sourceUrl": unicode(movie_link), "movie name": unicode(movie_name), "transcript": unicode(transcript), "fileType": file_type, "fileUrl":file_url, "duration":duration, "categories":categories, "imageUrl":image_url, "tags": unicode(Tags)})
-                            yield movie_link, movie_name, transcript,  file_type, file_url, duration, categories, image_url
+                            scraperwiki.sqlite.save(unique_keys=['fileUrl'], data={"sourceUrl": unicode(movie_link), "movie name": unicode(movie_name), "transcript": unicode(transcript), "fileType": file_type, "fileUrl":file_url, "duration":duration, "categories":categories, "imageUrl":image_url, "sizeInBytes":sizeInBytes, "tags": unicode(Tags)})
+                            yield movie_link, movie_name, transcript,  file_type, file_url, duration, categories, image_url, sizeInBytes
 
 
 def scrape():
@@ -221,6 +230,8 @@ def scrape():
             json_dic['duration']=l[5]
             json_dic['categories']=l[6]
             json_dic['imageUrl']=l[7]
+            json_dic['sizeInBytes'] = l[8]
+            #json_dic['tags'] = l[9]
             # print json_dic['movie name']
             lists.append(json_dic)
         sounds['sounds'] = lists
